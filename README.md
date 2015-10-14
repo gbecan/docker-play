@@ -12,6 +12,7 @@ docker run -v /path/to/app.zip:/play/app.zip:z gbecan/play
 
 ## From a git repository
 **Prerequisite: activator must be present in the repository**
+
 Specify the url to the git repository in a file and start the container as following:
 ```
 docker run -v /path/to/repo.txt:/play/repo.txt:z
