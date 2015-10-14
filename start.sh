@@ -11,7 +11,7 @@ options=""
 if [ -f $configFile ]
 then
     echo "Using configuration file"
-	options="-Dconfig.file=$configFile"
+	options="-Dconfig.file=/play/$configFile"
 fi
 
 # Unzip app if necessary
