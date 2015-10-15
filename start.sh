@@ -1,41 +1,43 @@
-#!/bin/sh
+#!/bin/bash
 
 configFile=config.conf
 packagedAppFile=app.zip
-gitRepoFile=repo.txt
-packaged=true
-options=""
+configOption=""
+
+function usage {
+    echo "USAGE: the application can be given either as a zip or git repository:"
+	echo "zip [OPTIONS]"
+	echo "git path/to/my/repo [OPTIONS]"
+	exit 1
+}
+
+if [ "$#" -lt 1 ]
+then
+	usage
+fi
 
 
 # Detect configuration file
 if [ -f $configFile ]
 then
     echo "Using configuration file"
-	options="-Dconfig.file=/play/$configFile"
+	configOption="-Dconfig.file=/play/$configFile"
 fi
 
-# Unzip app if necessary
-if [ -f $packagedAppFile ]
-then
-    echo "Unzipping app"
-	unzip app.zip -d app/
-fi
 
-# Clone git repository if necessary
-if [ -f $gitRepoFile ]
+if [ $1 == "zip" ]
 then
-    echo "Cloning github repository"
-	packaged=false
-	gitRepo=$(head -n 1 $gitRepoFile)
-	git clone $gitRepo app/
-fi
+	# Unzip app if necessary
+	if [ -f $packagedAppFile ]
+	then
+		echo "Unzipping app"
+		unzip app.zip -d app/
+	fi
 
-# Start server
-cd app/
-
-if $packaged
-then
+	# Start server
+	cd app/
 	echo "Starting server script"
+
 	# Find script
 	binDir=$(find . -name "bin" -type d | sed 1q)
 
@@ -49,9 +51,26 @@ then
 	script=$(find . -type f ! -name "*.*" | sed 1q)
 	
 	# Start server
-	$script $options
-else
+	$script $configOption "${@:2}"
+
+fi
+
+
+if [ $1 == "git" ]
+then
+	if [ "$#" -lt 2 ]
+	then
+		usage
+	fi
+
+	repo=$2
+	echo "Cloning github repository"
+	git clone $repo app/
+
+	# Start server
+	cd app/
 	echo "Starting server with activator"
+
 	# Find app directory
 	appDir=$(find . -type f -name "activator" -printf '%h\n' | sed 1q)
 
@@ -64,5 +83,6 @@ else
 	cd $appDir
 
 	# Start server
-	./activator start $options
+	./activator start $configOption "${@:3}"
+
 fi
